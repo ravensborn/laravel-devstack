@@ -1,2 +1,3 @@
+# Repo-only. Not meant to be copied into a project (docker/.gitignore covers docker/data).
 .idea/
 .vscode/

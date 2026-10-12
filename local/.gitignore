@@ -1,3 +1,0 @@
-# Keeps the stack's local state out of the host project's git
-.env
-data/

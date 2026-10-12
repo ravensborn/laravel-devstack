@@ -9,8 +9,8 @@ if [ ! -f artisan ]; then
 fi
 
 if [ ! -f .env ]; then
-    echo "No .env found, copying docker/local/.env.example"
-    cp docker/local/.env.example .env
+    echo "No .env in the project root. Create one before starting the stack." >&2
+    exit 1
 fi
 
 mkdir -p storage/framework/{cache/data,sessions,testing,views} storage/logs bootstrap/cache
@@ -27,9 +27,6 @@ case "${CONTAINER_ROLE:-app}" in
     app)
         if [ ! -f vendor/autoload.php ]; then
             composer install --no-progress --no-interaction
-        fi
-        if ! grep -qE '^APP_KEY=base64:' .env; then
-            php artisan key:generate --force
         fi
         php artisan optimize:clear
         php artisan migrate --force

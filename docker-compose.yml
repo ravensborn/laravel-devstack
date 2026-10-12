@@ -5,8 +5,11 @@
 #   API: http://localhost:3000   (health: /up)
 #
 # The project root is mounted at /var/www in every app container.
-# Containers are prefixed with COMPOSE_PROJECT_NAME; set it in the Laravel .env
-# (compose reads that file) or rename the "laravel" defaults below.
+# Compose reads the project's .env. Optional variables, with their defaults:
+#   COMPOSE_PROJECT_NAME=laravel   container / image / network prefix
+#   HOST_UID=1000  HOST_GID=1000   user the app containers run as
+#   APP_PORT=3000  DB_HOST_PORT=3001  REDIS_HOST_PORT=3002  REVERB_PORT=3003
+# In the Laravel .env use DB_HOST=database and REDIS_HOST=redis.
 
 x-app: &app
   build:

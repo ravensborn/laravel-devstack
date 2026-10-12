@@ -5,7 +5,7 @@ Docker setup for Laravel API projects, same shape as asiacell-tms: one compose f
 ```
 docker-compose.yml        local development stack
 docker/
-  local/                  Dockerfile, entrypoint, php.ini, nginx config, .env template
+  local/                  Dockerfile, entrypoint, php.ini, nginx config
   data/                   Postgres and Redis data, git-ignored
 ```
 
@@ -27,20 +27,31 @@ git clone --depth 1 git@github.com:ravensborn/laravel-devstack.git /tmp/devstack
   && cp -r /tmp/devstack/docker-compose.yml /tmp/devstack/docker . && rm -rf /tmp/devstack
 ```
 
-First start runs `composer install`, generates `APP_KEY` and runs migrations. The API is then at http://localhost:3000 and http://localhost:3000/up returns 200.
-
-If the project has no `.env`, `docker/local/.env.example` is copied in. It is a normal Laravel `.env` pointed at the `database` and `redis` services, plus a few variables compose reads:
+The project must have its own `.env`. Point it at the stack's services:
 
 ```
-COMPOSE_PROJECT_NAME=laravel   # container prefix, change per project
-HOST_UID=1000 / HOST_GID=1000  # match your user so files stay yours
+DB_CONNECTION=pgsql
+DB_HOST=database
+DB_PORT=5432
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=laravel
+REDIS_HOST=redis
+```
+
+Compose reads the same `.env`, so these optional lines go there too:
+
+```
+COMPOSE_PROJECT_NAME=laravel   # container / image / network prefix, change per project
+HOST_UID=1000                  # match your user so files stay yours
+HOST_GID=1000
 APP_PORT=3000                  # nginx
-DB_HOST_PORT=3001              # Postgres
-REDIS_HOST_PORT=3002           # Redis
-REVERB_PORT=3003               # Reverb
+DB_HOST_PORT=3001              # Postgres on the host
+REDIS_HOST_PORT=3002           # Redis on the host
+REVERB_PORT=3003               # Reverb on the host
 ```
 
-Compose reads the project's `.env`, so set those there. If the project already has a `.env`, add the lines you need.
+First start runs `composer install` and migrations. The API is then at http://localhost:3000 and http://localhost:3000/up returns 200.
 
 ## Services
 

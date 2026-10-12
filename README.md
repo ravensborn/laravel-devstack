@@ -1,6 +1,6 @@
 # laravel-devstack
 
-Docker configs for Laravel projects, one folder per environment. Copy this repo into a project as `docker/` and run the environment you need from its folder.
+Docker configs for Laravel API projects (no Node/npm in the image), one folder per environment. Copy this repo into a project as `docker/` and run the environment you need from its folder.
 
 ```
 docker/
@@ -14,7 +14,7 @@ Services, all prefixed with `PROJECT_NAME` from `local/.env`:
 
 | Service     | What it runs                                            | Host port |
 |-------------|---------------------------------------------------------|-----------|
-| `app`       | nginx + php-fpm (PHP 8.4, Node 22, Composer)            | 3000      |
+| `app`       | nginx + php-fpm (PHP 8.4, Composer)                     | 3000      |
 | `horizon`   | `php artisan horizon`, or `queue:work` if not installed | –         |
 | `reverb`    | `php artisan reverb:start`, idles if not installed      | 3003      |
 | `scheduler` | `php artisan schedule:work`                             | –         |
@@ -34,7 +34,7 @@ cp .env.example .env     # set PROJECT_NAME, change ports if they clash
 docker compose up -d --build
 ```
 
-First start takes a few minutes: `composer install`, `npm run build`, `APP_KEY` generation and migrations all run automatically.
+First start takes a few minutes: `composer install`, `APP_KEY` generation and migrations run automatically.
 Then the app is at http://localhost:3000 and http://localhost:3000/up returns 200.
 
 If the project has no `.env`, `local/laravel.env` is copied in (PostgreSQL + Redis, service hostnames). After that, edit the project's `.env`, not the template.
@@ -52,7 +52,7 @@ docker compose exec app php artisan migrate
 docker compose exec app php artisan tinker
 docker compose exec app bash               # shell in the app container
 docker compose down                        # stop (data is kept in ./data)
-docker compose down -v                     # also drop the composer/npm cache volume
+docker compose down -v                     # also drop the composer cache volume
 ```
 
 Database and Redis data live in `local/data/`. Delete that folder for a clean slate.
@@ -72,7 +72,7 @@ To enable them: `composer require laravel/horizon laravel/reverb`, then `docker 
 ```
 local/
   docker-compose.yml   services
-  Dockerfile           PHP 8.4 fpm + nginx + node + composer
+  Dockerfile           PHP 8.4 fpm + nginx + composer (no Node, API projects only)
   config/              nginx, php, php-fpm config and the entrypoint
   laravel.env          Laravel .env template for the containers
   .env.example         compose variables (project name, ports, credentials)

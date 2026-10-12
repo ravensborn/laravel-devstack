@@ -20,10 +20,6 @@ if [ "$role" = "app" ]; then
         echo "[entrypoint] Installing composer dependencies ..."
         composer install --no-progress --no-interaction
     fi
-    if [ -f package.json ] && [ ! -f public/build/manifest.json ]; then
-        echo "[entrypoint] Building frontend assets ..."
-        npm install --no-audit --no-fund && npm run build
-    fi
 else
     waited=0
     while [ ! -f vendor/autoload.php ]; do

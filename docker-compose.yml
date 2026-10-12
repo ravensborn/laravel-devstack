@@ -1,0 +1,109 @@
+name: ${PROJECT_NAME:-laravel}
+
+x-php: &php
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      UID: ${HOST_UID:-1000}
+      GID: ${HOST_GID:-1000}
+  image: ${PROJECT_NAME:-laravel}-local
+  working_dir: /var/www
+  volumes:
+    - ${APP_PATH:-../app}:/var/www:delegated
+    - ./env/.env.app:/devstack/.env.app:ro
+    - dev-home:/home/dev
+  networks:
+    - default
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *php
+    container_name: ${PROJECT_NAME:-laravel}-app
+    environment:
+      - CONTAINER_ROLE=app
+    ports:
+      - "${APP_PORT:-3000}:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/up > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # Runs Horizon when laravel/horizon is installed, otherwise a plain queue:work
+  horizon:
+    <<: *php
+    container_name: ${PROJECT_NAME:-laravel}-horizon
+    environment:
+      - CONTAINER_ROLE=horizon
+    depends_on:
+      app:
+        condition: service_healthy
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  # Runs Reverb when laravel/reverb is installed, otherwise idles
+  reverb:
+    <<: *php
+    container_name: ${PROJECT_NAME:-laravel}-reverb
+    environment:
+      - CONTAINER_ROLE=reverb
+    ports:
+      - "${REVERB_PORT:-3003}:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *php
+    container_name: ${PROJECT_NAME:-laravel}-scheduler
+    environment:
+      - CONTAINER_ROLE=scheduler
+    depends_on:
+      app:
+        condition: service_healthy
+
+  database:
+    container_name: ${PROJECT_NAME:-laravel}-database
+    image: postgres:18
+    ports:
+      - "${DB_PORT:-3001}:5432"
+    environment:
+      - POSTGRES_DB=${DB_DATABASE:-laravel}
+      - POSTGRES_USER=${DB_USERNAME:-laravel}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-laravel}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-laravel} -d ${DB_DATABASE:-laravel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    container_name: ${PROJECT_NAME:-laravel}-redis
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-3002}:6379"
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  dev-home:

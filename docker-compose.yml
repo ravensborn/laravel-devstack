@@ -55,7 +55,7 @@ services:
     environment:
       CONTAINER_ROLE: app
 
-  # Runs Horizon when laravel/horizon is installed, otherwise a plain queue:work
+  # Runs Horizon when laravel/horizon is installed, otherwise idles
   horizon:
     <<: *app
     container_name: ${COMPOSE_PROJECT_NAME:-laravel}-horizon

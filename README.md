@@ -59,7 +59,7 @@ First start runs `composer install` and migrations. The API is then at http://lo
 |-------------|---------------------------------------------------------|-----------|
 | `nginx`     | nginx:alpine, serves `public/`                          | 3000      |
 | `app`       | php-fpm 8.4 + Composer                                  | –         |
-| `horizon`   | `php artisan horizon`, or `queue:work` if not installed | –         |
+| `horizon`   | `php artisan horizon`, idles if not installed           | –         |
 | `scheduler` | `php artisan schedule:work`                             | –         |
 | `reverb`    | `php artisan reverb:start`, idles if not installed      | 3003      |
 | `database`  | PostgreSQL 18                                           | 3001      |
@@ -82,4 +82,4 @@ Delete `docker/data` for a clean database.
 
 ## Horizon and Reverb
 
-Both services are always defined so the stack works for any project. `horizon` runs Horizon when `laravel/horizon` is in `vendor/`, otherwise a plain `queue:work`. `reverb` runs Reverb when `laravel/reverb` is installed, otherwise idles. After `composer require laravel/horizon laravel/reverb`, run `docker compose restart horizon reverb` and set `BROADCAST_CONNECTION=reverb` in `.env`.
+Both services are always defined so the stack works for any project. Each runs its process when the package is in `vendor/`, otherwise idles with a log message. After `composer require laravel/horizon laravel/reverb`, run `docker compose restart horizon reverb` and set `BROADCAST_CONNECTION=reverb` in `.env`.

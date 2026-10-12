@@ -38,8 +38,8 @@ case "${CONTAINER_ROLE:-app}" in
         if [ -d vendor/laravel/horizon ]; then
             exec php artisan horizon
         fi
-        echo "laravel/horizon not installed, running queue:work instead"
-        exec php artisan queue:work --tries=3 --timeout=90
+        echo "laravel/horizon not installed, idling. Run: composer require laravel/horizon"
+        exec sleep infinity
         ;;
 
     scheduler)

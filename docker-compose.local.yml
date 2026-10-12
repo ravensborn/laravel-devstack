@@ -1,6 +1,6 @@
 # Local development stack.
 #
-#   docker compose up -d --build
+#   docker compose -f docker-compose.local.yml up -d --build
 #
 #   API: http://localhost:3000   (health: /up)
 #

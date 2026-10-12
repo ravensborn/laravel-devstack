@@ -3,7 +3,7 @@
 Docker setup for Laravel API projects, same shape as asiacell-tms: one compose file per environment at the project root, one folder per environment under `docker/`.
 
 ```
-docker-compose.yml        local development stack
+docker-compose.local.yml  local development stack
 docker/
   local/                  Dockerfile, entrypoint, php.ini, nginx config
   data/                   Postgres and Redis data, git-ignored
@@ -14,17 +14,17 @@ No Node in the image. This is for API projects.
 
 ## Install into a project
 
-Copy `docker-compose.yml` and the `docker/` folder into the Laravel project root, then:
+Copy `docker-compose.local.yml` and the `docker/` folder into the Laravel project root, then:
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
 Or in one go:
 
 ```bash
 git clone --depth 1 git@github.com:ravensborn/laravel-devstack.git /tmp/devstack \
-  && cp -r /tmp/devstack/docker-compose.yml /tmp/devstack/docker . && rm -rf /tmp/devstack
+  && cp -r /tmp/devstack/docker-compose.local.yml /tmp/devstack/docker . && rm -rf /tmp/devstack
 ```
 
 The project must have its own `.env`. Point it at the stack's services:
@@ -69,17 +69,19 @@ The project root is mounted at `/var/www` in every app container. Containers run
 
 ## Daily use
 
+Every command needs `-f docker-compose.local.yml`. Set `COMPOSE_FILE=docker-compose.local.yml` in the project's `.env` to skip it.
+
 ```bash
-docker compose up -d
-docker compose logs -f app
-docker compose exec app php artisan migrate
-docker compose exec app php artisan tinker
-docker compose exec app bash
-docker compose down            # data stays in docker/data
+docker compose -f docker-compose.local.yml up -d
+docker compose -f docker-compose.local.yml logs -f app
+docker compose -f docker-compose.local.yml exec app php artisan migrate
+docker compose -f docker-compose.local.yml exec app php artisan tinker
+docker compose -f docker-compose.local.yml exec app bash
+docker compose -f docker-compose.local.yml down     # data stays in docker/data
 ```
 
 Delete `docker/data` for a clean database.
 
 ## Horizon and Reverb
 
-Both services are always defined so the stack works for any project. Each runs its process when the package is in `vendor/`, otherwise idles with a log message. After `composer require laravel/horizon laravel/reverb`, run `docker compose restart horizon reverb` and set `BROADCAST_CONNECTION=reverb` in `.env`.
+Both services are always defined so the stack works for any project. Each runs its process when the package is in `vendor/`, otherwise idles with a log message. After `composer require laravel/horizon laravel/reverb`, run `docker compose -f docker-compose.local.yml restart horizon reverb` and set `BROADCAST_CONNECTION=reverb` in `.env`.

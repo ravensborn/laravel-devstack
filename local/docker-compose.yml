@@ -1,3 +1,5 @@
+# Local development stack. Lives at <project>/docker/local/, the Laravel app is two levels up.
+# Run from this folder:  docker compose up -d --build
 name: ${PROJECT_NAME:-laravel}
 
 x-php: &php
@@ -10,11 +12,9 @@ x-php: &php
   image: ${PROJECT_NAME:-laravel}-local
   working_dir: /var/www
   volumes:
-    - ${APP_PATH:-../app}:/var/www:delegated
-    - ./env/.env.app:/devstack/.env.app:ro
+    - ../..:/var/www:delegated
+    - ./laravel.env:/devstack/laravel.env:ro
     - dev-home:/home/dev
-  networks:
-    - default
   restart: unless-stopped
 
 services:

@@ -1,9 +1,16 @@
 # laravel-devstack
 
-Reusable Docker Compose stack for running any Laravel app locally. Point it at a project, run `docker compose up`, done.
-Local development only; not meant for production.
+Docker configs for Laravel projects, one folder per environment. Copy this repo into a project as `docker/` and run the environment you need from its folder.
 
-## Services
+```
+docker/
+  local/   local development stack (this is all there is for now)
+  prod/    coming later
+```
+
+## Local
+
+Services, all prefixed with `PROJECT_NAME` from `local/.env`:
 
 | Service     | What it runs                                            | Host port |
 |-------------|---------------------------------------------------------|-----------|
@@ -14,31 +21,29 @@ Local development only; not meant for production.
 | `database`  | PostgreSQL 18                                           | 3001      |
 | `redis`     | Redis (cache, sessions, queue)                          | 3002      |
 
-The app source is bind-mounted into the containers, so edits on the host apply immediately.
-Containers run as your host UID/GID, so files they create are owned by you.
+The project root is bind-mounted into the containers, so edits on the host apply immediately. Containers run as your host UID/GID, so files they create are owned by you.
 
-## Setup
+### Setup
 
 ```bash
-git clone git@github.com:ravensborn/laravel-devstack.git
-cd laravel-devstack
+# inside your Laravel project
+git clone --depth 1 git@github.com:ravensborn/laravel-devstack.git docker && rm -rf docker/.git
 
-cp .env.example .env
-# set PROJECT_NAME and APP_PATH, adjust ports if they clash
-
+cd docker/local
+cp .env.example .env     # set PROJECT_NAME, change ports if they clash
 docker compose up -d --build
 ```
 
-First start takes a few minutes: it runs `composer install`, `npm run build`, generates `APP_KEY`, and runs migrations.
-When it is done the app is at http://localhost:3000 and http://localhost:3000/up returns 200.
+First start takes a few minutes: `composer install`, `npm run build`, `APP_KEY` generation and migrations all run automatically.
+Then the app is at http://localhost:3000 and http://localhost:3000/up returns 200.
 
-If the app has no `.env`, `env/.env.app` is copied in automatically. After that, edit the app's `.env`, not the template.
+If the project has no `.env`, `local/laravel.env` is copied in (PostgreSQL + Redis, service hostnames). After that, edit the project's `.env`, not the template.
 
-## Running several projects
+`local/.gitignore` keeps `.env` and `data/` out of the project's git. Commit the rest of `docker/` with the project.
 
-One clone of this repo serves one project at a time (the `.env` picks it). To run two projects side by side, clone it twice with different `PROJECT_NAME` and ports.
+### Daily use
 
-## Daily use
+Run these from `docker/local`:
 
 ```bash
 docker compose up -d                       # start
@@ -50,24 +55,25 @@ docker compose down                        # stop (data is kept in ./data)
 docker compose down -v                     # also drop the composer/npm cache volume
 ```
 
-Database and Redis data live in `./data/` (git-ignored). Delete that folder for a clean slate.
+Database and Redis data live in `local/data/`. Delete that folder for a clean slate.
 
-## Horizon and Reverb
+### Horizon and Reverb
 
 Both services are always defined so the stack works for any project:
 
 - `horizon` runs Horizon when `laravel/horizon` is in `vendor/`, otherwise a plain `queue:work`.
 - `reverb` runs Reverb when `laravel/reverb` is in `vendor/`, otherwise it idles with a log message.
 
-To enable them in a project: `composer require laravel/horizon laravel/reverb`, then `docker compose restart horizon reverb`.
-`env/.env.app` already has the Reverb variables; set `BROADCAST_CONNECTION=reverb` in the app's `.env`.
+To enable them: `composer require laravel/horizon laravel/reverb`, then `docker compose restart horizon reverb`.
+`laravel.env` already has the Reverb variables; set `BROADCAST_CONNECTION=reverb` in the project's `.env`.
 
-## Layout
+### Layout
 
 ```
-docker-compose.yml   services
-Dockerfile           PHP 8.4 fpm + nginx + node + composer
-docker/              nginx, php, php-fpm config and the entrypoint
-env/.env.app         Laravel .env template for the containers
-.env.example         compose variables (project name, path, ports, credentials)
+local/
+  docker-compose.yml   services
+  Dockerfile           PHP 8.4 fpm + nginx + node + composer
+  config/              nginx, php, php-fpm config and the entrypoint
+  laravel.env          Laravel .env template for the containers
+  .env.example         compose variables (project name, ports, credentials)
 ```

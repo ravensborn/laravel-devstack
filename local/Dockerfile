@@ -33,10 +33,10 @@ RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY docker/php.ini      /usr/local/etc/php/php.ini
-COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY docker/nginx.conf   /etc/nginx/nginx.conf
-COPY docker/entrypoint.sh /entrypoint.sh
+COPY config/php.ini      /usr/local/etc/php/php.ini
+COPY config/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY config/nginx.conf   /etc/nginx/nginx.conf
+COPY config/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
     && mkdir -p /var/cache/nginx /var/log/nginx /run /var/lib/nginx \

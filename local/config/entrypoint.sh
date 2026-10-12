@@ -5,13 +5,13 @@ set -euo pipefail
 role=${CONTAINER_ROLE:-app}
 
 if [ ! -f artisan ]; then
-    echo "[entrypoint] /var/www does not contain a Laravel app. Check APP_PATH in .env" >&2
+    echo "[entrypoint] /var/www does not contain a Laravel app. Expected the app at ../.. relative to docker/local" >&2
     exit 1
 fi
 
 if [ ! -f .env ]; then
-    echo "[entrypoint] No .env in the app, copying env/.env.app from laravel-devstack"
-    cp /devstack/.env.app .env
+    echo "[entrypoint] No .env in the app, copying docker/local/laravel.env"
+    cp /devstack/laravel.env .env
 fi
 
 # Only the app container installs dependencies; the others share the bind mount and wait.
